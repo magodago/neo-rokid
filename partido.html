@@ -232,6 +232,7 @@ function monta(lg,e,s){
  }
  var x1="",x2="";
  for(var i2=ke.length-1;i2>=0;i2--){var k2=ke[i2];if(k2.scoringPlay)continue;var t2=evtTxt(k2.text||"");if(t2.length<8)continue;
+  if(/^(Delay|End of|Second Half|First Half|Start|Kick|Match ends)/i.test(t2))continue;
   if(/^Cambio/.test(t2)){if(!x2)x2=t2;}else{if(!x1)x1=t2;}
   if(x1)break;}
  o.ult=(x1||x2).slice(0,46);
