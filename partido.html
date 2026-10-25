@@ -142,6 +142,7 @@ if(pRM!==null&&o.state!=="pre"){
   for(var i=gs.length-1;i>=0;i--){if(gs[i].rm===true){gg=gs[i];break;}}
   if(!gg)gg={t:"Real Madrid",m:o.min||""};
   cele(gg);grito(gg.p||"",1);armar(o.clip);
+  if(CLIP)setTimeout(abrirVideo,7500);
  }else if(rvS>pRV){golRival(rmH?o.a:o.h,o.min||"");}
 }
 pRM=rmS;pRV=rvS;
@@ -271,20 +272,26 @@ function ver(){
  var w=document.getElementById("w");
  w.style.display="block";
  if(VT)clearTimeout(VT);
- VT=setTimeout(ocultar,5000);
+ VT=setTimeout(ocultar,10000);
  tick();
 }
 function ocultar(){document.getElementById("w").style.display="none";}
 function abrirVideo(){
  if(!CLIP)return;
  var d=document.getElementById("vid"),v=document.getElementById("v");
- v.src=CLIP;v.muted=true;d.style.display="flex";VAB=true;v.play().catch(function(){});
+ if(v.getAttribute("src")!==CLIP){v.setAttribute("src",CLIP);}
+ d.style.display="flex";VAB=true;
+ v.muted=false;v.volume=1;
+ try{v.currentTime=0;v.play();}catch(e){}
 }
 function cerrarVideo(){
  var d=document.getElementById("vid"),v=document.getElementById("v");
  try{v.pause();}catch(e){}
  d.style.display="none";VAB=false;
 }
+(function(){var v0=document.getElementById("v");
+ if(v0)v0.addEventListener("ended",function(){cerrarVideo();ver();});
+})();
 var CQ=(location.search.match(/[?&]clip=([^&]+)/)||[])[1];
 if(CQ)armar(decodeURIComponent(CQ));
 window.NEO_TAP=function(){
