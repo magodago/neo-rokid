@@ -1,0 +1,155 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>SITUACION</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#04050a}
+body{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;color:#dceaf7;
+ -webkit-font-smoothing:antialiased;user-select:none}
+#scan{position:fixed;inset:0;pointer-events:none;z-index:9;
+ background:repeating-linear-gradient(180deg,rgba(120,220,255,.05) 0 1px,transparent 1px 3px)}
+#scan:after{content:"";position:absolute;left:0;right:0;height:70px;
+ background:linear-gradient(180deg,transparent,rgba(90,230,255,.07),transparent);
+ animation:bar 5.5s linear infinite}
+@keyframes bar{0%{top:-80px}100%{top:100%}}
+#w{position:absolute;inset:0;padding:16px 14px;display:flex;flex-direction:column;gap:9px;opacity:0;transition:opacity .35s}
+#w.on{opacity:1}
+#w:before,#w:after{content:"";position:absolute;width:16px;height:16px;border:1px solid #22d3ee;opacity:.6}
+#w:before{top:8px;left:8px;border-right:0;border-bottom:0}
+#w:after{bottom:8px;right:8px;border-left:0;border-top:0}
+#top{display:flex;justify-content:space-between;align-items:baseline;
+ font-size:9px;letter-spacing:2.4px;color:#22d3ee;opacity:.8}
+#hora{color:#d946ef;font-size:11px;letter-spacing:1.5px}
+#sec{font-size:21px;letter-spacing:4px;color:#f2fbff;text-shadow:0 0 14px rgba(34,211,238,.45);margin-top:2px}
+#sec b{color:#d946ef;text-shadow:0 0 16px rgba(217,70,239,.65);font-weight:400}
+#sub{font-size:9px;letter-spacing:2px;color:#5d7a8f}
+</style></head>
+<body>
+<style>
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;
+ border-bottom:1px solid rgba(34,211,238,.13);padding:5px 0}
+.k{font-size:9.5px;letter-spacing:2.2px;color:#22d3ee;opacity:.72;white-space:nowrap}
+.v{font-size:14.5px;letter-spacing:.6px;color:#eef8ff;text-align:right;
+ text-shadow:0 0 9px rgba(120,220,255,.28);white-space:nowrap}
+.m{color:#d946ef;text-shadow:0 0 11px rgba(217,70,239,.55)}
+.g{color:#7dffb2;text-shadow:0 0 10px rgba(125,255,178,.45)}
+.dim{color:#6f8ba0;font-size:11px}
+.chips{display:flex;gap:7px;margin-top:2px}
+.chip{flex:1;border:1px solid rgba(34,211,238,.25);padding:6px 4px;text-align:center;background:rgba(34,211,238,.04)}
+.chip .n{font-size:16px;color:#f2fbff;text-shadow:0 0 10px rgba(34,211,238,.4)}
+.chip .l{font-size:7.5px;letter-spacing:1.6px;color:#22d3ee;opacity:.75;margin-top:2px}
+#log{margin-top:auto;font-size:9px;letter-spacing:1.4px;color:#22d3ee;opacity:.75;
+ display:flex;justify-content:space-between}
+.cursor{display:inline-block;width:6px;height:10px;background:#d946ef;animation:bl 1s steps(1) infinite;vertical-align:-1px}
+@keyframes bl{50%{opacity:0}}
+.glitch{animation:gl .28s steps(2) 1}
+@keyframes gl{0%{transform:translate(0)}25%{transform:translate(-1.5px,1px)}50%{transform:translate(1.5px,-1px)}100%{transform:translate(0)}}
+#hatch{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#d946ef,transparent);opacity:.5;animation:scan2 3.2s linear infinite}
+@keyframes scan2{0%{top:12%}100%{top:92%}}
+</style>
+<div id="scan"></div>
+<div id="w">
+ <div id="top"><span>NEO &middot; SITUACION</span><span id="hora">--:--:--</span></div>
+ <div id="sec">SECTOR <b id="city">&middot;&middot;&middot;</b></div>
+ <div id="reg" style="font-size:9px;letter-spacing:2px;color:#5d7a8f">SINCRONIZANDO &middot; ENLACE SATELITAL</div>
+ <div id="hatch"></div>
+
+ <div class="row"><span class="k">COORD</span><span class="v" id="co">--</span></div>
+ <div class="row"><span class="k">ALTITUD</span><span class="v" id="alt">--</span></div>
+ <div class="chips">
+  <div class="chip"><div class="n" id="t">--</div><div class="l">TEMP</div></div>
+  <div class="chip"><div class="n" id="vv">--</div><div class="l">VIENTO</div></div>
+  <div class="chip"><div class="n" id="hu">--</div><div class="l">HUMEDAD</div></div>
+ </div>
+ <div class="row"><span class="k">AIRE</span><span class="v" id="aq">--</span></div>
+ <div class="row"><span class="k">SOL</span><span class="v" id="sol">--</span></div>
+ <div class="row"><span class="k">LUNA</span><span class="v" id="lu">--</span></div>
+ <div class="row"><span class="k">SISMO CERCANO</span><span class="v" id="si">--</span></div>
+ <div class="row"><span class="k">ESTACION ISS</span><span class="v" id="is">--</span></div>
+ <div class="row"><span class="k">ENLACE</span><span class="v" id="pi">--</span></div>
+ <div id="log"><span id="est">LINK ESTABLE</span><span>NEO_CORE <span class="cursor"></span></span></div>
+</div>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+function put(i,txt,cls){var e=$(i);if(!e)return;if(e.textContent!==txt){e.textContent=txt;
+ e.classList.remove("glitch");void e.offsetWidth;e.classList.add("glitch");}
+ if(cls!==undefined)e.className="v "+cls;}
+function chip(i,txt){var e=$(i);if(e&&e.textContent!==txt){e.textContent=txt;
+ e.classList.remove("glitch");void e.offsetWidth;e.classList.add("glitch");}}
+function reloj(){var d=new Date(),p=function(n){return("0"+n).slice(-2)};
+ $("hora").textContent=p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());}
+setInterval(reloj,1000);reloj();
+function dir(g){var n=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSO","SO","OSO","O","ONO","NO","NNO"];
+ return n[Math.round(((g%360)/22.5))%16];}
+function wtext(c){var m={0:"DESPEJADO",1:"CLARO",2:"NUBES",3:"CUBIERTO",45:"NIEBLA",48:"NIEBLA",51:"LLOVIZNA",
+ 61:"LLUVIA",63:"LLUVIA",65:"LLUVIA",71:"NIEVE",80:"CHUBASCOS",81:"CHUBASCOS",82:"CHUBASCOS",
+ 95:"TORMENTA",96:"TORMENTA",99:"TORMENTA"};return m[c]||"---";}
+function faseLuna(d){var y=d.getFullYear(),m=d.getMonth()+1,day=d.getDate();
+ if(m<3){y--;m+=12}
+ var A=Math.floor(y/100),B=2-A+Math.floor(A/4),C=Math.floor(365.25*(y+4716)),D=Math.floor(30.6001*(m+1));
+ var jd=B+C+day+1720994.5;var p=(jd-2451550.1)/29.530588853;p=p-Math.floor(p);
+ var il=Math.round(p*100);var nom=p<0.03?"NUEVA":p<0.22?"CRECIENTE":p<0.28?"CUARTO CRECIENTE":
+  p<0.47?"GIBOSA":p<0.53?"LLENA":p<0.72?"MENGUANTE":p<0.78?"CUARTO MENGUANTE":"MENGUANTE";
+ return nom+" "+il+"%";}
+function hhmm(iso){var s=String(iso||"");return s.slice(11,16);}
+</script>
+<script>
+var T0=performance.now();
+async function datos(){
+ try{
+  $("est").textContent="SINCRONIZANDO";
+  var ip=await fetch("https://ipwho.is/",{cache:"no-store"}).then(function(r){return r.json()});
+  var la=ip.latitude||40.13, lo=ip.longitude||-3.85;
+  $("city").textContent=(ip.city||"DESCONOCIDO").toUpperCase();
+  $("reg").textContent=((ip.region||"")+" · "+(ip.country_code||"")).toUpperCase();
+  put("co",Math.abs(la).toFixed(4)+(la>=0?"N ":"S ")+Math.abs(lo).toFixed(4)+(lo>=0?"E":"O"),"m");
+  var U1="https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+
+   "&current=temperature_2m,wind_speed_10m,wind_direction_10m,relative_humidity_2m,is_day,weather_code"+
+   "&daily=sunrise,sunset&timezone=auto&forecast_days=1";
+  var U2="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+la+"&longitude="+lo+"&current=european_aqi,pm2_5";
+  var U3="https://api.open-meteo.com/v1/elevation?latitude="+la+"&longitude="+lo;
+  var r=await Promise.all([
+   fetch(U1,{cache:"no-store"}).then(function(r){return r.json()}),
+   fetch(U2,{cache:"no-store"}).then(function(r){return r.json()}),
+   fetch(U3,{cache:"no-store"}).then(function(r){return r.json()})
+  ]);
+  var me=r[0]||{},aq=r[1]||{},el=r[2]||{},c=me.current||{},d=me.daily||{};
+  chip("t",Math.round(c.temperature_2m)+"°");
+  chip("vv",Math.round(c.wind_speed_10m)+" "+dir(c.wind_direction_10m));
+  chip("hu",Math.round(c.relative_humidity_2m)+"%");
+  put("alt",Math.round((el.elevation||[0])[0])+" m · "+wtext(c.weather_code),"");
+
+  var a=aq.current||{},q=a.european_aqi;
+  put("aq",(q==null?"--":Math.round(q))+" AQI · PM2.5 "+(a.pm2_5==null?"--":Math.round(a.pm2_5)),(q>60?"m":"g"));
+  put("sol","AMANECE "+hhmm(d.sunrise&&d.sunrise[0])+" · ANOCHECE "+hhmm(d.sunset&&d.sunset[0]),"");
+  put("lu",faseLuna(new Date()),"m");
+  var st=fetch("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude="+la+
+   "&longitude="+lo+"&maxradiuskm=400&limit=1&orderby=time&minmagnitude=1",{cache:"no-store"})
+   .then(function(r){return r.json()}).then(function(g){
+    var f0=(g.features||[])[0];
+    if(!f0){put("si","NINGUNO EN 400 KM","dim");return;}
+    var co=f0.geometry.coordinates,dla=(co[1]-la)*111,dlo=(co[0]-lo)*111*Math.cos(la*Math.PI/180);
+    var km=Math.round(Math.sqrt(dla*dla+dlo*dlo)),h=Math.max(1,Math.round((Date.now()-f0.properties.time)/3600000));
+    put("si","M"+f0.properties.mag+" · "+km+" km · "+h+" h","m");
+   }).catch(function(){put("si","SIN DATO","dim")});
+  var sa=fetch("https://api.wheretheiss.at/v1/satellites/25544",{cache:"no-store"})
+   .then(function(r){return r.json()}).then(function(s){
+    var dla=(s.latitude-la)*111,dlo=(s.longitude-lo)*111*Math.cos(la*Math.PI/180);
+    var km=Math.sqrt(dla*dla+dlo*dlo);
+    put("is",Math.round(s.altitude)+" km · "+(km<450?"SOBRE TI":"A "+Math.round(km)+" KM"),"m");
+   }).catch(function(){put("is","SIN DATO","dim")});
+  await Promise.all([st,sa]);
+  put("pi",Math.round(performance.now()-T0)+" ms · 4 NODOS","g");
+  $("est").textContent="LINK ESTABLE";
+  $("w").classList.add("on");
+ }catch(err){$("est").textContent="SIN ENLACE";$("w").classList.add("on")}
+}
+var VT=null;
+function ver(){datos();$("w").classList.add("on");clearTimeout(VT);VT=setTimeout(ocultar,15000)}
+function ocultar(){$("w").classList.remove("on")}
+window.NEO_TAP=function(){if($("w").classList.contains("on")){ocultar()}else{ver()}};
+window.NEO_SET=function(t){};
+ver();
+</script></body></html>
