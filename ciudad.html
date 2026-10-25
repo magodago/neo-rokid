@@ -107,7 +107,7 @@ async function datos(){
  try{
   $("est").textContent="SINCRONIZANDO";
   var g=await geo();
-  var ip=await fetch("https://ipwho.is/",{cache:"no-store"}).then(function(r){return r.json()});
+  var ip=await fetch("https://ipwho.is/",{cache:"no-store"}).then(function(r){return r.json()}).catch(function(){return {}});
   var la=(g&&g.latitude)||ip.latitude||40.13, lo=(g&&g.longitude)||ip.longitude||-3.85;
   $("city").textContent=(ip.city||"DESCONOCIDO").toUpperCase();
   $("reg").textContent=((ip.region||"")+" · "+(ip.country_code||"")).toUpperCase();
@@ -118,9 +118,9 @@ async function datos(){
   var U2="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+la+"&longitude="+lo+"&current=european_aqi,pm2_5";
   var U3="https://api.open-meteo.com/v1/elevation?latitude="+la+"&longitude="+lo;
   var r=await Promise.all([
-   fetch(U1,{cache:"no-store"}).then(function(r){return r.json()}),
-   fetch(U2,{cache:"no-store"}).then(function(r){return r.json()}),
-   fetch(U3,{cache:"no-store"}).then(function(r){return r.json()})
+   fetch(U1,{cache:"no-store"}).then(function(r){return r.json()}).catch(function(){return {}}),
+   fetch(U2,{cache:"no-store"}).then(function(r){return r.json()}).catch(function(){return {}}),
+   fetch(U3,{cache:"no-store"}).then(function(r){return r.json()}).catch(function(){return {}})
   ]);
   var me=r[0]||{},aq=r[1]||{},el=r[2]||{},c=me.current||{},d=me.daily||{};
   chip("t",Math.round(c.temperature_2m)+"°");
