@@ -235,7 +235,7 @@ function monta(lg,e,s){
   if(/^(Delay|End of|Second Half|First Half|Start|Kick|Match ends)/i.test(t2))continue;
   if(/^Cambio/.test(t2)){if(!x2)x2=t2;}else{if(!x1)x1=t2;}
   if(x1)break;}
- o.ult=(x1||x2).slice(0,46);
+ o.ult=(x1||x2); if(o.ult.length>58)o.ult=o.ult.slice(0,o.ult.lastIndexOf(" ",56))+"…";
  if(o.state==="pre")o.hora=horaLocal(e.date);
  return o;
 }
