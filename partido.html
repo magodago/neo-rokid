@@ -99,7 +99,7 @@ function bannerRival(eq,m,sc){
  box.querySelector("v").textContent=eq||"Rival";
  box.querySelector("w").textContent=(m?m+"  ·  ":"")+(sc?sc+"  ·  ":"")+"GOL DEL RIVAL";
  box.classList.add("on");
- ver();
+ ocultar();
  setTimeout(function(){box.classList.remove("on");box.querySelector("u").style.fontSize="54px";box.querySelector("u").style.color="#7dffb2";},10000);
 }
 function golRival(eq,m){
