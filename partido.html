@@ -173,6 +173,13 @@ function calScan(){
  return Promise.all(ps).then(function(a){var all=[];a.forEach(function(x){all=all.concat(x);});
   all.sort(function(x,y){return x.d<y.d?-1:1;});return all.slice(0,6);});
 }
+function evtTxt(t){
+ var s=String(t||"");
+ s=s.replace(/^Substitution,\s*/i,"Cambio · ").replace(/\s*replaces\s*/i," por ");
+ s=s.replace(/Yellow card/gi,"Amarilla").replace(/Red card/gi,"Roja").replace(/Second yellow/gi,"Doble amarilla");
+ s=s.replace(/Penalty/gi,"Penalti").replace(/Own goal/gi,"Propia puerta").replace(/\.$/,"");
+ return s;
+}
 function listaHtml(l){
  var h="";
  for(var i=0;i<l.length&&i<4;i++){h+="<div>"+fechaLocal(l[i].d)+"  "+String(l[i].n).replace(" at "," – ")+"</div>";}
@@ -223,7 +230,11 @@ function monta(lg,e,s){
   var eq=(k.team&&k.team.displayName)||"";
   o.goles.push({m:(k.clock&&k.clock.displayValue)||"",t:pl+" · "+(eq===H.team.displayName?H.team.abbreviation:A.team.abbreviation),p:pl,rm:(eq==="Real Madrid")});
  }
- for(var i2=ke.length-1;i2>=0;i2--){var k2=ke[i2];if(k2.scoringPlay)continue;var t2=(k2.text||"");if(t2.length<8)continue;o.ult=t2.slice(0,54);break;}
+ var x1="",x2="";
+ for(var i2=ke.length-1;i2>=0;i2--){var k2=ke[i2];if(k2.scoringPlay)continue;var t2=evtTxt(k2.text||"");if(t2.length<8)continue;
+  if(/^Cambio/.test(t2)){if(!x2)x2=t2;}else{if(!x1)x1=t2;}
+  if(x1)break;}
+ o.ult=(x1||x2).slice(0,46);
  if(o.state==="pre")o.hora=horaLocal(e.date);
  return o;
 }
