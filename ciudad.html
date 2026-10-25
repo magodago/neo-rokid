@@ -96,12 +96,19 @@ function faseLuna(d){var y=d.getFullYear(),m=d.getMonth()+1,day=d.getDate();
 function hhmm(iso){var s=String(iso||"");return s.slice(11,16);}
 </script>
 <script>
+function geo(){return new Promise(function(res){
+ if(!navigator.geolocation){res(null);return;}
+ var t=setTimeout(function(){res(null)},4500);
+ navigator.geolocation.getCurrentPosition(function(p){clearTimeout(t);res(p.coords)},
+  function(){clearTimeout(t);res(null)},{timeout:4000,maximumAge:300000,enableHighAccuracy:false});
+});}
 var T0=performance.now();
 async function datos(){
  try{
   $("est").textContent="SINCRONIZANDO";
+  var g=await geo();
   var ip=await fetch("https://ipwho.is/",{cache:"no-store"}).then(function(r){return r.json()});
-  var la=ip.latitude||40.13, lo=ip.longitude||-3.85;
+  var la=(g&&g.latitude)||ip.latitude||40.13, lo=(g&&g.longitude)||ip.longitude||-3.85;
   $("city").textContent=(ip.city||"DESCONOCIDO").toUpperCase();
   $("reg").textContent=((ip.region||"")+" · "+(ip.country_code||"")).toUpperCase();
   put("co",Math.abs(la).toFixed(4)+(la>=0?"N ":"S ")+Math.abs(lo).toFixed(4)+(lo>=0?"E":"O"),"m");
@@ -123,7 +130,7 @@ async function datos(){
 
   var a=aq.current||{},q=a.european_aqi;
   put("aq",(q==null?"--":Math.round(q))+" AQI · PM2.5 "+(a.pm2_5==null?"--":Math.round(a.pm2_5)),(q>60?"m":"g"));
-  put("sol","AMANECE "+hhmm(d.sunrise&&d.sunrise[0])+" · ANOCHECE "+hhmm(d.sunset&&d.sunset[0]),"");
+  put("sol","↑ "+hhmm(d.sunrise&&d.sunrise[0])+"   ↓ "+hhmm(d.sunset&&d.sunset[0])+"   "+hhmm(d.sunrise&&d.sunrise[0]).replace(":","h"),"");
   put("lu",faseLuna(new Date()),"m");
   var st=fetch("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude="+la+
    "&longitude="+lo+"&maxradiuskm=400&limit=1&orderby=time&minmagnitude=1",{cache:"no-store"})
@@ -138,10 +145,10 @@ async function datos(){
    .then(function(r){return r.json()}).then(function(s){
     var dla=(s.latitude-la)*111,dlo=(s.longitude-lo)*111*Math.cos(la*Math.PI/180);
     var km=Math.sqrt(dla*dla+dlo*dlo);
-    put("is",Math.round(s.altitude)+" km · "+(km<450?"SOBRE TI":"A "+Math.round(km)+" KM"),"m");
+    put("is","ALT "+Math.round(s.altitude)+" km · "+(km<450?"SOBRE TI":Math.round(km)+" km"),"m");
    }).catch(function(){put("is","SIN DATO","dim")});
   await Promise.all([st,sa]);
-  put("pi",Math.round(performance.now()-T0)+" ms · 4 NODOS","g");
+  put("pi","CARGA "+Math.round(performance.now()-T0)+" ms · 4 NODOS","g");
   $("est").textContent="LINK ESTABLE";
   $("w").classList.add("on");
  }catch(err){$("est").textContent="SIN ENLACE";$("w").classList.add("on")}
