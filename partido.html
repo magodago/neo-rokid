@@ -87,7 +87,7 @@ function cele(g){
 }
 function grito(n,rm){
  try{
-  var a=new Audio("/gol.wav?rm="+(rm?1:0)+"&n="+encodeURIComponent(n||"")+"&t="+Date.now());
+  var a=new Audio("gol.wav?rm="+(rm?1:0)+"&n="+encodeURIComponent(n||"")+"&t="+Date.now());
   a.volume=1;a.play().catch(function(){});
  }catch(e){}
 }
