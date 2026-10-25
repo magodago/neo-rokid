@@ -165,7 +165,7 @@ function calScan(){
   var ds=d.getFullYear()+("0"+(d.getMonth()+1)).slice(-2)+("0"+d.getDate()).slice(-2);
   for(var j=0;j<L2.length;j++){(function(lg,dt){
    ps.push(J(SB+lg+"/scoreboard?dates="+dt).then(function(r){
-    var out=[];((r.events)||[]).forEach(function(e){if(/Madrid/.test(e.name||""))out.push({n:e.name,d:e.date});});
+    var out=[];((r.events)||[]).forEach(function(e){if(/Real Madrid/.test(e.name||""))out.push({n:e.name,d:e.date});});
     return out;
    }).catch(function(){return [];}));
   })(L2[j],ds);}
@@ -245,7 +245,7 @@ function datos(){
   if(i>=LI.length)return prox();
   var lg=LI[i++];
   return J(SB+lg+"/scoreboard").then(function(d){
-   var ev=(d.events||[]).filter(function(x){return /Madrid/.test(x.name||"");});
+   var ev=(d.events||[]).filter(function(x){return /Real Madrid/.test(x.name||"");});
    if(!ev.length)return paso();
    var e=null;
    for(var j=0;j<ev.length;j++){var st=((ev[j].status||{}).type||{}).state;if(st!=="post"){e=ev[j];break;}}
