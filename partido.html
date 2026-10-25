@@ -326,7 +326,7 @@ function cerrarVideo(){
  if(v0)v0.addEventListener("ended",function(){cerrarVideo();ver();});
 })();
 var RVQ=(location.search.match(/[?&]rival=([^&]+)/)||[])[1];
-if(RVQ){var rp=decodeURIComponent(RVQ).split("|");setTimeout(function(){bannerRival(rp[0],rp[1],rp[2]);},700);}
+if(RVQ){var rp=decodeURIComponent(RVQ).split(/[|,]/);setTimeout(function(){bannerRival(rp[0],rp[1],rp[2]);},700);}
 var CQ=(location.search.match(/[?&]clip=([^&]+)/)||[])[1];
 if(CQ==="vig"){setTimeout(vigilaClip,1500);}else if(CQ){armar(decodeURIComponent(CQ));setTimeout(abrirVideo,3000);}
 window.NEO_TAP=function(){
