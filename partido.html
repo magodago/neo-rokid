@@ -293,7 +293,7 @@ function cerrarVideo(){
  if(v0)v0.addEventListener("ended",function(){cerrarVideo();ver();});
 })();
 var CQ=(location.search.match(/[?&]clip=([^&]+)/)||[])[1];
-if(CQ)armar(decodeURIComponent(CQ));
+if(CQ){armar(decodeURIComponent(CQ));setTimeout(abrirVideo,3000);}
 window.NEO_TAP=function(){
  if(VAB){cerrarVideo();return;}
  if(CLIP&&Date.now()-CT<180000){abrirVideo();return;}
