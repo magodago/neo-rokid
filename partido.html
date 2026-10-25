@@ -180,6 +180,9 @@ function calScan(){
 }
 function evtTxt(t){
  var s=String(t||"");
+ var m=s.match(/^(.+?)\s*(?:\(([^)]+)\))?\s*is shown the (Yellow|Red|Second Yellow)/i);
+ if(m) return (/second/i.test(m[3])?"Doble amarilla · ":"" + "") + ((/red/i.test(m[3])&&!/second/i.test(m[3]))?"Roja · ":"Amarilla · ")+m[1];
+
  s=s.replace(/^Substitution,\s*/i,"Cambio · ").replace(/\s*replaces\s*/i," por ");
  s=s.replace(/Yellow card/gi,"Amarilla").replace(/Red card/gi,"Roja").replace(/Second yellow/gi,"Doble amarilla");
  s=s.replace(/Penalty/gi,"Penalti").replace(/Own goal/gi,"Propia puerta").replace(/\.$/,"");
