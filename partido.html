@@ -142,7 +142,7 @@ if(pRM!==null&&o.state!=="pre"){
   for(var i=gs.length-1;i>=0;i--){if(gs[i].rm===true){gg=gs[i];break;}}
   if(!gg)gg={t:"Real Madrid",m:o.min||""};
   cele(gg);grito(gg.p||"",1);armar(o.clip);
-  if(CLIP)setTimeout(abrirVideo,7500);
+  if(CLIP)setTimeout(abrirVideo,7500);else vigilaClip();
  }else if(rvS>pRV){golRival(rmH?o.a:o.h,o.min||"");}
 }
 pRM=rmS;pRV=rvS;
@@ -244,6 +244,7 @@ function monta(lg,e,s){
   if(/^Cambio/.test(t2)){if(!x2)x2=t2;}else{if(!x1)x1=t2;}
   if(x1)break;}
  o.ult=(x1||x2); if(o.ult.length>58)o.ult=o.ult.slice(0,o.ult.lastIndexOf(" ",56))+"…";
+ EVID=e.id;LGA=lg;
  var vv=(s.videos||[]);
  if(vv.length){var lk=vv[0].links||{};var mp=(lk.mobile&&lk.mobile.source&&lk.mobile.source.href)||(lk.source&&lk.source.href)||"";if(mp)o.clip=mp;}
  if(o.state==="pre")o.hora=horaLocal(e.date);
@@ -279,6 +280,24 @@ function ver(){
  tick();
 }
 function ocultar(){document.getElementById("w").style.display="none";}
+var EVID="",LGA="esp.1",GOLTS=0,VIG=null;
+function vigilaClip(){
+ if(VIG)clearInterval(VIG);
+ var hasta=Date.now()+15*60000;
+ VIG=setInterval(function(){
+  if(Date.now()>hasta){clearInterval(VIG);VIG=null;return;}
+  if(!EVID)return;
+  J(SB+LGA+"/summary?event="+EVID).then(function(s){
+   var v0=(s.videos||[])[0]; if(!v0)return;
+   var lk=v0.links||{};
+   var h=(lk.mobile&&lk.mobile.source&&lk.mobile.source.href)||(lk.source&&lk.source.href)||"";
+   if(!h||h===CLIP)return;
+   var pd=Date.parse(v0.originalPublishDate||"")||0;
+   if(pd&&GOLTS&&pd<GOLTS-180000)return;
+   armar(h);abrirVideo();clearInterval(VIG);VIG=null;
+  }).catch(function(){});
+ },40000);
+}
 function abrirVideo(){
  if(!CLIP)return;
  var d=document.getElementById("vid"),v=document.getElementById("v");
@@ -296,7 +315,7 @@ function cerrarVideo(){
  if(v0)v0.addEventListener("ended",function(){cerrarVideo();ver();});
 })();
 var CQ=(location.search.match(/[?&]clip=([^&]+)/)||[])[1];
-if(CQ){armar(decodeURIComponent(CQ));setTimeout(abrirVideo,3000);}
+if(CQ==="vig"){setTimeout(vigilaClip,1500);}else if(CQ){armar(decodeURIComponent(CQ));setTimeout(abrirVideo,3000);}
 window.NEO_TAP=function(){
  if(VAB){cerrarVideo();return;}
  if(CLIP&&Date.now()-CT<180000){abrirVideo();return;}
