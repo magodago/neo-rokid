@@ -70,6 +70,12 @@
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden) tic();
   });
+  var suelto = new URLSearchParams(location.search).get("a");
+  if (suelto) {
+    cola.push({ t: suelto, k: "apk" });
+    pintar();
+  }
+
   tic();
   setInterval(tic, 15000);
 })();
