@@ -50,6 +50,8 @@
   }
 
   function tic() {
+    // con la app en segundo plano manda la APK (Aviso.java), aqui no se toca la cola
+    if (document.hidden) return;
     fetch(BUZON + "/pull?k=" + encodeURIComponent(K), { cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -65,6 +67,9 @@
     pintar();
   };
 
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) tic();
+  });
   tic();
   setInterval(tic, 15000);
 })();
