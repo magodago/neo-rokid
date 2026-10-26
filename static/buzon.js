@@ -71,6 +71,7 @@
     if (!document.hidden) tic();
   });
   var suelto = new URLSearchParams(location.search).get("a");
+  try { console.log("buzon suelto=" + suelto); } catch (e) {}
   if (suelto) {
     cola.push({ t: suelto, k: "apk" });
     pintar();
