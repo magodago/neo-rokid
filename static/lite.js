@@ -170,6 +170,15 @@
     x.restore();
     x.globalCompositeOperation = "source-over";
 
+    /* marca de version para diagnostico */
+    x.save();
+    x.textAlign = "left";
+    x.textBaseline = "top";
+    x.font = "12px " + F;
+    x.fillStyle = "rgba(120,255,200,0.85)";
+    x.fillText("R41", 8, 8);
+    x.restore();
+
     /* lo que ha oido de ti, en tono bajo */
     var ahora2 = ahora;
     var alf = frase ? Math.max(0, Math.min(1, (8000 - (ahora2 - fraseTs)) / 1200)) : 0;
