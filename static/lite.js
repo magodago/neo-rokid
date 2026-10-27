@@ -14,6 +14,12 @@ cv.style.cssText="position:fixed;left:0;top:0";
 [].forEach.call(b.children,function(e){if(e!==cv)e.style.display="none"});
 
 var x=cv.getContext("2d"),W,H,CX,CY,R,niv=0,ns=0;
+/* fuente pixel VT323, servida junto al HUD (sin depender de Google) */
+var fst=document.createElement("style");
+fst.textContent="@font-face{font-family:VT323;src:url('static/fonts/VT323.woff2') format('woff2'),url('fonts/VT323.woff2') format('woff2');font-display:block}";
+document.head.appendChild(fst);
+var F="VT323,ui-monospace,Menlo,monospace";
+try{if(document.fonts&&document.fonts.load)document.fonts.load("20px VT323");}catch(e){}
 
 /* ── paleta por estado ── */
 var PAL={
@@ -31,7 +37,7 @@ var PAL={
   "MIC SIN SEÑAL":[255,120,90]
 };
 var col=[110,140,125], obj=[110,140,125];
-var estado="EN ESPERA", frase="", fraseTs=0, turnos=0;
+var estado="EN ESPERA", frase="", fraseTs=0, turnos=0, modoMin=false;
 
 /* lo que dice NEO (subtitulo) */
 var dice="", diceTs=0, diceFin=0;
@@ -174,6 +180,35 @@ for(i=0;i<txt.length;i++){var c=txt.charAt(i);
 x.fillText(c,x0,py);x0+=x.measureText(c).width+ex;}
 return ancho;}
 
+/* ── vista minima: sin masa, solo texto y pixel ── */
+function pintaMinimo(t,ahora){
+var esc=/ESCUCH|OYENDO/.test(estado),pen=/PENS|TRANSCR/.test(estado),hab=/HABL/.test(estado);
+x.save();
+x.textAlign="center";x.textBaseline="middle";
+/* marca */
+x.font="15px "+F;
+x.fillStyle=rgb(0.42+0.18*Math.sin(t*2));
+espaciado("N E O",CX,H*0.072,2.4);
+/* linea fina */
+x.strokeStyle=rgb(0.17);x.lineWidth=1;
+x.beginPath();x.moveTo(CX-W*0.24,H*0.112);x.lineTo(CX+W*0.24,H*0.112);x.stroke();
+/* pixelera: cuadraditos que laten con la voz */
+var N=38,paso=(W*0.72)/N,xi0=CX-W*0.36,yy=H*0.655;
+for(var i=0;i<N;i++){
+var u=Math.abs(i/(N-1)*2-1);
+var env=Math.max(0,1-u*1.06);
+var amp=0.16+0.84*(ns*0.8+0.20*Math.abs(Math.sin(t*7+i*0.62)));
+var alto=2+11*env*amp*(hab?1.25:0.62);
+var alfa=0.07+0.52*env*(0.30+0.70*amp);
+x.fillStyle=rgb(alfa);
+x.fillRect(xi0+i*paso,yy-alto/2,Math.max(2,paso*0.55),Math.max(2,alto));}
+/* pensando: tres pixelitos girando */
+if(pen){for(var k=0;k<3;k++){var a=t*2.3+k*2.09;
+x.fillStyle=rgb(0.75);
+x.fillRect(CX+Math.cos(a)*52,yy+Math.sin(a)*14-2,3,3);}}
+x.restore();}
+
+
 function textos(t){
 var ahora=Date.now();
 x.textAlign="center";x.textBaseline="middle";
@@ -181,12 +216,12 @@ x.textAlign="center";x.textBaseline="middle";
 var alfa=frase?Math.max(0,Math.min(1,(9000-(ahora-fraseTs))/1500)):0;
 if(alfa>0.01){
 x.save();
-x.font="600 15px ui-monospace,Menlo,monospace";
+x.font="19px "+F;
 x.shadowColor="rgba(0,0,0,0.95)";x.shadowBlur=9;x.shadowOffsetY=1;
 x.fillStyle="rgba(238,255,246,"+(0.94*alfa).toFixed(3)+")";
 var ls=envolver(frase,W-44,x);
-var y0=H*0.70-(ls.length-1)*10;
-for(var i=0;i<ls.length;i++)x.fillText(ls[i],CX,y0+i*20);
+var y0=(modoMin?H*0.205:H*0.70)-(ls.length-1)*12;
+for(var i=0;i<ls.length;i++)x.fillText(ls[i],CX,y0+i*24);
 x.restore();}
 /* NEO habla: subtitulo blanco mientras sueña el audio, se queda 4 s despues */
 if(dice){
@@ -195,19 +230,19 @@ var a2=(ahora-fin<4000)?Math.min(1,(ahora-diceTs)/260):Math.max(0,(4000-(ahora-f
 if(a2>0.01){
 x.save();
 x.globalAlpha=Math.min(1,a2);
-x.font="600 16px ui-monospace,Menlo,monospace";
+x.font="22px "+F;
 x.shadowColor="rgba(0,120,140,0.85)";x.shadowBlur=12;
 x.fillStyle="rgba(240,255,255,0.97)";
 var ld=envolver(dice,W-46,x);
-var yd=H*0.82-(ld.length-1)*10;
-for(var j=0;j<ld.length;j++)x.fillText(ld[j],CX,yd+j*21);
+var yd=(modoMin?H*0.42:H*0.82)-(ld.length-1)*13;
+for(var j=0;j<ld.length;j++)x.fillText(ld[j],CX,yd+j*26);
 x.restore();}}
 /* estado */
 x.save();
-x.font="500 11px ui-monospace,Menlo,monospace";
+x.font="15px "+F;
 x.shadowColor="rgba(0,0,0,0.95)";x.shadowBlur=7;x.shadowOffsetY=1;
 x.fillStyle="rgba(240,255,250,"+(0.86+0.10*Math.sin(t*3)).toFixed(3)+")";
-var ancho=espaciado(estado,CX,H*0.935,2.2);
+var ancho=espaciado(estado,CX,H*0.935,1.8);
 /* punto de color: dice el estado de un vistazo, sin leer */
 x.shadowBlur=0;
 x.fillStyle=rgb(0.95);
@@ -252,14 +287,14 @@ x.fillStyle=g;x.fillRect(0,0,W,H);
 x.globalCompositeOperation="source-over";
 /* marca */
 x.textAlign="center";x.textBaseline="middle";
-x.font="500 10px ui-monospace,Menlo,monospace";
+x.font="14px "+F;
 x.fillStyle="rgba(120,235,170,"+(0.55+0.25*Math.sin(t*2)).toFixed(3)+")";
 espaciado("N E O",CX,H*0.30,2.6);
 /* linea fina */
 x.strokeStyle="rgba(120,235,170,0.22)";x.lineWidth=1;
 x.beginPath();x.moveTo(CX-W*0.20,H*0.35);x.lineTo(CX+W*0.20,H*0.35);x.stroke();
 /* texto del aviso */
-x.font="600 18px ui-monospace,Menlo,monospace";
+x.font="24px "+F;
 x.shadowColor="rgba(0,0,0,0.9)";x.shadowBlur=8;
 x.fillStyle="rgba(238,255,246,0.97)";
 var la=envolver(aviso,W-54,x,5);
@@ -267,7 +302,7 @@ var ya=H*0.47-(la.length-1)*13;
 for(var i=0;i<la.length;i++)x.fillText(la[i],CX,ya+i*27);
 /* pista */
 x.shadowBlur=0;
-x.font="500 10px ui-monospace,Menlo,monospace";
+x.font="14px "+F;
 x.fillStyle="rgba(150,200,180,0.42)";
 espaciado("D I   H E C H O   O   L U E G O",CX,H*0.68,1.4);
 x.restore();}
@@ -296,13 +331,13 @@ x.beginPath();x.moveTo(0,sy);x.lineTo(W,sy);x.stroke();
 x.globalCompositeOperation="source-over";
 /* N E O */
 x.textAlign="center";x.textBaseline="middle";
-x.font="600 26px ui-monospace,Menlo,monospace";
+x.font="40px "+F;
 var aNeo=Math.max(0,Math.min(1,(e-200)/400))*(e>1900?Math.max(0,1-(e-1900)/400):1);
 x.fillStyle="rgba(235,255,250,"+aNeo.toFixed(3)+")";
 x.shadowColor="rgba(80,255,200,0.55)";x.shadowBlur=18;
 espaciado("NEO",CX,H*0.42,9);
 /* SISTEMAS EN LINEA */
-x.font="500 10px ui-monospace,Menlo,monospace";
+x.font="14px "+F;
 x.shadowBlur=8;
 var aSis=Math.max(0,Math.min(1,(e-700)/400))*(e>1900?Math.max(0,1-(e-1900)/400):1);
 x.fillStyle="rgba(150,255,215,"+aSis.toFixed(3)+")";
@@ -333,8 +368,12 @@ if(hablando){var f=0.42+0.30*Math.abs(Math.sin(t*6.5));if(f>ns)ns=ns*0.6+f*0.4;}
 var cy=CY+Math.sin(t*0.7)*4;
 x.clearRect(0,0,W,H);
 var ahora=(new Date()).getTime();
+var diceVivo=dice&&(ahora-(diceFin||ahora)<4000);
+modoMin=(escuchando||pensando||hablando||diceVivo)&&!avisoOn;
 if(avisoOn){
 pintaAviso(t,ahora);
+}else if(modoMin){
+pintaMinimo(t,ahora);
 }else{
 if(escuchando)anillo(cy,t);
 cuerpo(cy,t,blob(cy,t));
