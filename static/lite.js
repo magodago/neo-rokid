@@ -2,10 +2,10 @@
    Sin fondo, sin masa, sin punto de estado y sin frase de abajo. */
 (function () {
   var b = document.body;
-  b.style.cssText = "background:transparent;margin:0;overflow:hidden";
-  document.documentElement.style.background = "transparent";
+  b.style.cssText = "background:#000;margin:0;overflow:hidden";
+  document.documentElement.style.background = "#000";
   var st = document.createElement("style");
-  st.textContent = "html,body{background:transparent!important;margin:0;overflow:hidden}*{background-color:transparent!important}";
+  st.textContent = "html,body{background:#000!important;margin:0;overflow:hidden}canvas{background:#000}";
   document.head.appendChild(st);
 
   var cv = document.getElementById("hud") || document.createElement("canvas");
@@ -170,15 +170,6 @@
     x.restore();
     x.globalCompositeOperation = "source-over";
 
-    /* marca de version para diagnostico */
-    x.save();
-    x.textAlign = "left";
-    x.textBaseline = "top";
-    x.font = "12px " + F;
-    x.fillStyle = "rgba(120,255,200,0.85)";
-    x.fillText("R41", 8, 8);
-    x.restore();
-
     /* lo que ha oido de ti, en tono bajo */
     var ahora2 = ahora;
     var alf = frase ? Math.max(0, Math.min(1, (8000 - (ahora2 - fraseTs)) / 1200)) : 0;
@@ -273,7 +264,8 @@
       var f = 0.42 + 0.30 * Math.abs(Math.sin(t * 6.5));
       if (f > ns) ns = ns * 0.6 + f * 0.4;
     }
-    x.clearRect(0, 0, W, H);
+    x.fillStyle = "#000";
+    x.fillRect(0, 0, W, H);
     var ahora = Date.now();
     if (avisoOn) pintaAviso(t, ahora);
     else pinta(t, ahora);
