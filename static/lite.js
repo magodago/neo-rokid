@@ -192,6 +192,14 @@ cuerpo(cy,t,blob(cy,t));
 barras(cy,t);
 if(pensando)orbitas(cy,t);
 textos(t);
+/* latido: punto verde arriba a la izquierda, un pulso por minuto */
+var ph=(t%60)/60, pulso=ph<0.05?Math.sin(ph/0.05*Math.PI):0;
+x.save();x.globalCompositeOperation="lighter";
+x.fillStyle="rgba(43,255,136,"+(0.18+0.82*pulso).toFixed(2)+")";
+x.shadowColor="rgba(43,255,136,"+(0.45+0.55*pulso).toFixed(2)+")";
+x.shadowBlur=pulso>0?10:0;
+x.beginPath();x.arc(14,14,3.4+1.8*pulso,0,7);x.fill();
+x.restore();
 x.globalCompositeOperation="source-over";
 requestAnimationFrame(loop);}
 requestAnimationFrame(loop);})();
