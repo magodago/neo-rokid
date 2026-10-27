@@ -125,7 +125,7 @@
         pen = /PENS|TRANSCR/.test(estado),
         hab = /HABL/.test(estado);
     var amp = 2.4 + 17 * ns * (hab ? 1.15 : 1);
-    var yNeo = H * 0.30, yOnd = H * 0.385;
+    var yNeo = H * 0.395, yOnd = H * 0.470;
 
     x.save();
     x.textAlign = "center";
@@ -136,13 +136,13 @@
     var eh = ahora - hazTs;
     if (eh >= 0 && eh < 620) {
       var u = eh / 620, al = (1 - u) * (1 - u);
-      var g = x.createLinearGradient(0, H * 0.16, 0, H * 0.46);
+      var g = x.createLinearGradient(0, H * 0.24, 0, H * 0.56);
       g.addColorStop(0, "rgba(150,245,215,0)");
       g.addColorStop(0.5, "rgba(190,255,235," + (0.55 * al).toFixed(3) + ")");
       g.addColorStop(1, "rgba(150,245,215,0)");
       x.fillStyle = g;
       var ancho = Math.max(1.2, 12 * (1 - Math.min(1, u * 2.2)));
-      x.fillRect(CX - ancho / 2, H * 0.16, ancho, H * 0.30);
+      x.fillRect(CX - ancho / 2, H * 0.24, ancho, H * 0.32);
     }
 
     /* N E O */
@@ -182,8 +182,8 @@
       x.strokeStyle = "rgba(0,14,16,0.75)";
       x.fillStyle = "rgba(180,225,205," + (0.72 * alf).toFixed(3) + ")";
       var lf = envolver(frase, W - 60, 2);
-      for (var i = 0; i < lf.length; i++) x.strokeText(lf[i], CX, H * 0.50 + i * 21);
-      for (var i2 = 0; i2 < lf.length; i2++) x.fillText(lf[i2], CX, H * 0.50 + i2 * 21);
+      for (var i = 0; i < lf.length; i++) x.strokeText(lf[i], CX, H * 0.575 + i * 21);
+      for (var i2 = 0; i2 < lf.length; i2++) x.fillText(lf[i2], CX, H * 0.575 + i2 * 21);
       x.restore();
     }
 
@@ -203,7 +203,7 @@
         x.shadowBlur = 10;
         x.fillStyle = "rgba(248,255,255,0.99)";
         var ld = envolver(dice, W - 56, 5);
-        var yd = H * 0.60 - (ld.length - 1) * 13;
+        var yd = H * 0.665 - (ld.length - 1) * 13;
         for (var j = 0; j < ld.length; j++) x.strokeText(ld[j], CX, yd + j * 27);
         for (var j2 = 0; j2 < ld.length; j2++) x.fillText(ld[j2], CX, yd + j2 * 27);
         x.restore();
