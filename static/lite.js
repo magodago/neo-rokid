@@ -30,6 +30,10 @@
   function js_set(s) {
     if (!s) return;
     var t = ("" + s).toUpperCase();
+    var antesDormido = /DORM|REPOSO/.test(estado);
+    var ahoraDormido = /DORM|REPOSO/.test(t);
+    if (antesDormido && !ahoraDormido) hazTs = performance.now();   // haz de luz al oir "Neo"
+    if (ahoraDormido) { frase = ""; dice = ""; diceFin = 0; }
     estado = t;
     if (/ERROR|SIN RED|SIN MICRO|SIN SENAL|SIN SEÑAL|FALLO/.test(t)) obj = [255, 90, 90];
     else if (/ESCUCH|OYENDO/.test(t)) obj = [150, 235, 200];
@@ -121,6 +125,7 @@
 
   /* ── la unica vista viva: NEO arriba, ondas debajo, texto al final ── */
   function pinta(t, ahora) {
+    if (/DORM|REPOSO/.test(estado)) return;   // dormido: negro, la lente limpia
     var esc = /ESCUCH|OYENDO/.test(estado),
         pen = /PENS|TRANSCR/.test(estado),
         hab = /HABL/.test(estado);
