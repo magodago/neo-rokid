@@ -1,6 +1,7 @@
 /* NEO lite — masa holográfica + estado real de la voz.
    Estados: EN ESPERA, ESCUCHANDO, PENSANDO, HABLANDO, SIN RED.
-   Todo se dibuja en el canvas: en el HUD no hay HTML visible (fondo negro = transparente). */
+   Todo se dibuja en el canvas: en el HUD no hay HTML visible (fondo negro = transparente).
+   Avisos: se abren con ?a=texto (los manda el Vigia) y se pintan a una sola línea. */
 (function(){
 var b=document.body;
 b.style.cssText="background:#000;margin:0;overflow:hidden";
@@ -32,6 +33,11 @@ var PAL={
 var col=[110,140,125], obj=[110,140,125];
 var estado="EN ESPERA", frase="", fraseTs=0, turnos=0;
 
+/* lo que dice NEO (subtitulo) */
+var dice="", diceTs=0, diceFin=0;
+/* aviso a una linea */
+var aviso="", avisoTs=0, avisoOn=false;
+
 window.NEO_SET=function(s){
   if(!s)return;
   var t=(""+s).toUpperCase();if(t=="ESPERA")t="TOCA PARA HABLAR";
@@ -50,6 +56,18 @@ window.NEO_TEXTO=function(t){ frase=(""+t).replace(/\s+/g," ").trim(); fraseTs=D
 window.NEO_TURNO=function(n){ turnos=(n|0); };
 window.NEO_TAP=function(){};
 window.NEO_PTT=function(){};
+
+/* NEO habla: su frase sale escrita abajo mientras suena el audio */
+window.NEO_DICE=function(t){ dice=(""+t).replace(/\s+/g," ").trim(); diceTs=Date.now(); diceFin=0; };
+window.NEO_CALLA=function(){ if(dice) diceFin=Date.now(); };
+
+/* aviso: ocupa la pantalla a una sola linea, sin la masa */
+window.NEO_AVISO=function(t){
+  aviso=(""+t).replace(/\s+/g," ").trim(); avisoTs=Date.now();
+  avisoOn=aviso.length>0;
+  if(avisoOn){ estado="AVISO"; obj=[120,235,170]; }
+};
+window.NEO_AVISO_OFF=function(){ avisoOn=false; aviso=""; estado="EN ESPERA"; };
 
 function rgb(a){return "rgba("+(col[0]|0)+","+(col[1]|0)+","+(col[2]|0)+","+a+")";}
 
@@ -156,9 +174,23 @@ x.font="600 15px ui-monospace,Menlo,monospace";
 x.shadowColor="rgba(0,0,0,0.95)";x.shadowBlur=9;x.shadowOffsetY=1;
 x.fillStyle="rgba(238,255,246,"+(0.94*alfa).toFixed(3)+")";
 var ls=envolver(frase,W-44,x);
-var y0=H*0.73-(ls.length-1)*10;
+var y0=H*0.70-(ls.length-1)*10;
 for(var i=0;i<ls.length;i++)x.fillText(ls[i],CX,y0+i*20);
 x.restore();}
+/* NEO habla: subtitulo blanco mientras sueña el audio, se queda 4 s despues */
+if(dice){
+var fin=diceFin||ahora;
+var a2=(ahora-fin<4000)?Math.min(1,(ahora-diceTs)/260):Math.max(0,(4000-(ahora-fin))/900);
+if(a2>0.01){
+x.save();
+x.globalAlpha=Math.min(1,a2);
+x.font="600 16px ui-monospace,Menlo,monospace";
+x.shadowColor="rgba(0,120,140,0.85)";x.shadowBlur=12;
+x.fillStyle="rgba(240,255,255,0.97)";
+var ld=envolver(dice,W-46,x);
+var yd=H*0.82-(ld.length-1)*10;
+for(var j=0;j<ld.length;j++)x.fillText(ld[j],CX,yd+j*21);
+x.restore();}}
 /* estado */
 x.save();
 x.font="500 11px ui-monospace,Menlo,monospace";
@@ -197,6 +229,88 @@ x.strokeStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(0.5*(1-f))+")";x.lineWidth=1.2
 x.beginPath();x.arc(px,py,r+11*f,0,7);x.stroke();}
 x.restore();}
 
+/* ── aviso: una sola linea, sin masa, sobre negro ── */
+function pintaAviso(t,ahora){
+var e=Math.min(1,(ahora-avisoTs)/260);
+x.save();x.globalAlpha=e;
+/* halo tenue detras */
+x.globalCompositeOperation="lighter";
+var g=x.createRadialGradient(CX,H*0.5,0,CX,H*0.5,W*0.85);
+g.addColorStop(0,"rgba(40,120,90,0.16)");g.addColorStop(1,"rgba(0,0,0,0)");
+x.fillStyle=g;x.fillRect(0,0,W,H);
+x.globalCompositeOperation="source-over";
+/* marca */
+x.textAlign="center";x.textBaseline="middle";
+x.font="500 10px ui-monospace,Menlo,monospace";
+x.fillStyle="rgba(120,235,170,"+(0.55+0.25*Math.sin(t*2)).toFixed(3)+")";
+espaciado("N E O",CX,H*0.30,2.6);
+/* linea fina */
+x.strokeStyle="rgba(120,235,170,0.22)";x.lineWidth=1;
+x.beginPath();x.moveTo(CX-W*0.20,H*0.35);x.lineTo(CX+W*0.20,H*0.35);x.stroke();
+/* texto del aviso */
+x.font="600 18px ui-monospace,Menlo,monospace";
+x.shadowColor="rgba(0,0,0,0.9)";x.shadowBlur=8;
+x.fillStyle="rgba(238,255,246,0.97)";
+var la=envolver(aviso,W-52,x);
+var ya=H*0.47-(la.length-1)*13;
+for(var i=0;i<la.length;i++)x.fillText(la[i],CX,ya+i*27);
+/* pista */
+x.shadowBlur=0;
+x.font="500 10px ui-monospace,Menlo,monospace";
+x.fillStyle="rgba(150,200,180,0.42)";
+espaciado("D I   H E C H O   O   L U E G O",CX,H*0.68,1.4);
+x.restore();}
+
+/* ── arranque: secuencia de encendido, 2,4 s ── */
+var tBoot=null;
+function pintaArranque(ahora){
+if(tBoot===null)tBoot=ahora;
+var e=ahora-tBoot;
+if(e>2400)return false;
+var u=e/2400;
+x.save();
+/* anillos que se abren */
+x.globalCompositeOperation="lighter";
+for(var i=0;i<3;i++){
+var f=Math.max(0,Math.min(1,(u*1.5)-(i*0.12)));
+if(f<=0)continue;
+var rr=R*(0.45+1.8*f);
+x.strokeStyle="rgba(120,235,180,"+(0.38*(1-f)).toFixed(3)+")";
+x.lineWidth=1.2;
+x.beginPath();x.arc(CX,H*0.42,rr,0,7);x.stroke();}
+/* barrido vertical */
+var sy=H*0.12+H*0.72*u;
+x.strokeStyle="rgba(120,235,180,0.20)";x.lineWidth=1;
+x.beginPath();x.moveTo(0,sy);x.lineTo(W,sy);x.stroke();
+x.globalCompositeOperation="source-over";
+/* N E O */
+x.textAlign="center";x.textBaseline="middle";
+x.font="600 26px ui-monospace,Menlo,monospace";
+var aNeo=Math.max(0,Math.min(1,(e-200)/400))*(e>1900?Math.max(0,1-(e-1900)/400):1);
+x.fillStyle="rgba(235,255,250,"+aNeo.toFixed(3)+")";
+x.shadowColor="rgba(80,255,200,0.55)";x.shadowBlur=18;
+espaciado("NEO",CX,H*0.42,9);
+/* SISTEMAS EN LINEA */
+x.font="500 10px ui-monospace,Menlo,monospace";
+x.shadowBlur=8;
+var aSis=Math.max(0,Math.min(1,(e-700)/400))*(e>1900?Math.max(0,1-(e-1900)/400):1);
+x.fillStyle="rgba(150,255,215,"+aSis.toFixed(3)+")";
+espaciado("S I S T E M A S   E N   L I N E A",CX,H*0.50,1.6);
+/* linea que se cierra */
+var f2=Math.max(0,Math.min(1,(e-400)/900));
+x.strokeStyle="rgba(120,235,180,"+(0.30*(1-u)).toFixed(3)+")";x.lineWidth=1;
+x.beginPath();x.moveTo(CX-W*0.30*f2,H*0.46);x.lineTo(CX+W*0.30*f2,H*0.46);x.stroke();
+x.restore();
+return true;
+}
+
+var qp={};
+(function(){var s=(location.search||"").replace(/^\?/,"").split("&");
+for(var i=0;i<s.length;i++){var p=s[i].split("=");
+if(p[0]){try{qp[decodeURIComponent(p[0])]=decodeURIComponent((p[1]||"").replace(/\+/g,"%20"));}
+catch(e){qp[p[0]]=p[1]||"";}}}})();
+if(qp.a){window.NEO_AVISO(qp.a);}
+
 function loop(ts){var t=ts/1000;
 if(!cv.parentNode)document.body.appendChild(cv);if(!W||!H)m();
 for(var i=0;i<3;i++)col[i]+=(obj[i]-col[i])*0.12;
@@ -207,12 +321,18 @@ ns=ns*0.85+niv*0.15;
 if(hablando){var f=0.42+0.30*Math.abs(Math.sin(t*6.5));if(f>ns)ns=ns*0.6+f*0.4;}
 var cy=CY+Math.sin(t*0.7)*4;
 x.clearRect(0,0,W,H);
+var ahora=(new Date()).getTime();
+if(avisoOn){
+pintaAviso(t,ahora);
+}else{
 if(escuchando)anillo(cy,t);
 cuerpo(cy,t,blob(cy,t));
 barras(cy,t);
 if(pensando)orbitas(cy,t);
+}
 textos(t);
 punto(t);
+pintaArranque(ahora);
 x.globalCompositeOperation="source-over";
 requestAnimationFrame(loop);}
 requestAnimationFrame(loop);})();
