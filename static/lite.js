@@ -34,7 +34,7 @@ var estado="EN ESPERA", frase="", fraseTs=0, turnos=0;
 
 window.NEO_SET=function(s){
   if(!s)return;
-  var t=(""+s).toUpperCase();
+  var t=(""+s).toUpperCase();if(t=="ESPERA")t="TOCA PARA HABLAR";
   estado=t;
   var p=PAL[t];
   if(!p){
@@ -177,6 +177,26 @@ for(var k=0;k<Math.min(turnos,9);k++){
 x.beginPath();x.arc(W-14-k*7,H-10,1.8,0,7);x.fill();}}
 }
 
+var t0Latido=(new Date()).getTime();
+function punto(t){ /* punto de estado arriba a la derecha; late una vez por hora */
+var err=/ERROR|SIN RED|SIN MICRO|SIN SENAL|FALLO/.test(estado);
+var esc=/ESCUCH|OYENDO/.test(estado),pen=/PENS|TRANSCR/.test(estado),hab=/HABL/.test(estado);
+var c=err?[255,64,84]:(esc?[70,220,255]:(pen?[255,168,60]:(hab?[125,255,178]:[120,235,170])));
+var ahora=(new Date()).getTime(),ciclo=(ahora-t0Latido)%3600000;
+var latido=ciclo<5000,per=latido?170:950;
+var a=(latido?0.4:0.6)+0.4*(0.5+0.5*Math.sin(ahora/per));
+var r=latido?5.5:4,px=W-16,py=16;
+x.save();
+var g=x.createRadialGradient(px,py,0,px,py,r*4);
+g.addColorStop(0,"rgba("+c[0]+","+c[1]+","+c[2]+","+(0.5*a)+")");
+g.addColorStop(1,"rgba("+c[0]+","+c[1]+","+c[2]+",0)");
+x.fillStyle=g;x.beginPath();x.arc(px,py,r*4,0,7);x.fill();
+x.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+a+")";x.beginPath();x.arc(px,py,r,0,7);x.fill();
+if(latido){var f=(ciclo%1000)/1000;
+x.strokeStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(0.5*(1-f))+")";x.lineWidth=1.2;
+x.beginPath();x.arc(px,py,r+11*f,0,7);x.stroke();}
+x.restore();}
+
 function loop(ts){var t=ts/1000;
 if(!cv.parentNode)document.body.appendChild(cv);if(!W||!H)m();
 for(var i=0;i<3;i++)col[i]+=(obj[i]-col[i])*0.12;
@@ -192,14 +212,7 @@ cuerpo(cy,t,blob(cy,t));
 barras(cy,t);
 if(pensando)orbitas(cy,t);
 textos(t);
-/* latido: punto verde arriba a la izquierda, un pulso por minuto */
-var ph=(t%60)/60, pulso=ph<0.05?Math.sin(ph/0.05*Math.PI):0;
-x.save();x.globalCompositeOperation="lighter";
-x.fillStyle="rgba(43,255,136,"+(0.18+0.82*pulso).toFixed(2)+")";
-x.shadowColor="rgba(43,255,136,"+(0.45+0.55*pulso).toFixed(2)+")";
-x.shadowBlur=pulso>0?10:0;
-x.beginPath();x.arc(14,14,3.4+1.8*pulso,0,7);x.fill();
-x.restore();
+punto(t);
 x.globalCompositeOperation="source-over";
 requestAnimationFrame(loop);}
 requestAnimationFrame(loop);})();
