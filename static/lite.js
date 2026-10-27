@@ -38,6 +38,7 @@ var PAL={
 };
 var col=[110,140,125], obj=[110,140,125];
 var estado="EN ESPERA", frase="", fraseTs=0, turnos=0, modoMin=false;
+var hazTs=0, estAnt="";
 
 /* lo que dice NEO (subtitulo) */
 var dice="", diceTs=0, diceFin=0;
@@ -180,34 +181,49 @@ for(i=0;i<txt.length;i++){var c=txt.charAt(i);
 x.fillText(c,x0,py);x0+=x.measureText(c).width+ex;}
 return ancho;}
 
-/* ── vista minima: sin masa, solo texto y pixel ── */
+/* ── vista viva: haz, ondas y texto. Todo lo demas es transparente ── */
+function ondas(y0,t,amp){
+var N=46,w=W*0.62,x0=CX-w/2,i,u,env,yy;
+x.lineWidth=1.3;
+for(var capa=0;capa<2;capa++){
+x.beginPath();
+for(i=0;i<N;i++){
+u=i/(N-1)*2-1;
+env=Math.cos(u*1.45);if(env<0)env=0;
+yy=y0+Math.sin(i*0.62+t*(capa?6.1:7.4)+capa*1.7)*amp*env*(capa?0.55:1);
+if(i)x.lineTo(x0+i*w/(N-1),yy);else x.moveTo(x0,yy);}
+x.strokeStyle=rgb(capa?0.20:0.55);
+x.stroke();}}
+
 function pintaMinimo(t,ahora){
 var esc=/ESCUCH|OYENDO/.test(estado),pen=/PENS|TRANSCR/.test(estado),hab=/HABL/.test(estado);
+var amp=2.2+16*ns*(hab?1.15:1);
 x.save();
 x.textAlign="center";x.textBaseline="middle";
 /* marca */
 x.font="15px "+F;
-x.fillStyle=rgb(0.42+0.18*Math.sin(t*2));
-espaciado("N E O",CX,H*0.072,2.4);
-/* linea fina */
-x.strokeStyle=rgb(0.17);x.lineWidth=1;
-x.beginPath();x.moveTo(CX-W*0.24,H*0.112);x.lineTo(CX+W*0.24,H*0.112);x.stroke();
-/* pixelera: cuadraditos que laten con la voz */
-var N=38,paso=(W*0.72)/N,xi0=CX-W*0.36,yy=H*0.655;
-for(var i=0;i<N;i++){
-var u=Math.abs(i/(N-1)*2-1);
-var env=Math.max(0,1-u*1.06);
-var amp=0.16+0.84*(ns*0.8+0.20*Math.abs(Math.sin(t*7+i*0.62)));
-var alto=2+11*env*amp*(hab?1.25:0.62);
-var alfa=0.07+0.52*env*(0.30+0.70*amp);
-x.fillStyle=rgb(alfa);
-x.fillRect(xi0+i*paso,yy-alto/2,Math.max(2,paso*0.55),Math.max(2,alto));}
-/* pensando: tres pixelitos girando */
-if(pen){for(var k=0;k<3;k++){var a=t*2.3+k*2.09;
-x.fillStyle=rgb(0.75);
-x.fillRect(CX+Math.cos(a)*52,yy+Math.sin(a)*14-2,3,3);}}
+x.fillStyle=rgb(0.50+0.20*Math.sin(t*2));
+espaciado("N E O",CX,H*0.088,2.6);
+/* ondas: laten con tu voz o con la mia */
+ondas(H*0.145,t,amp);
+/* haz de luz al despertar */
+var eh=ahora-hazTs;
+if(eh>=0&&eh<520){
+var u=eh/520,al=(1-u)*(1-u);
+x.globalCompositeOperation="lighter";
+var g=x.createLinearGradient(0,H*0.05,0,H*0.30);
+g.addColorStop(0,"rgba(120,235,255,0)");
+g.addColorStop(0.55,"rgba(150,245,255,"+(0.55*al).toFixed(3)+")");
+g.addColorStop(1,"rgba(120,235,255,0)");
+x.fillStyle=g;
+var ancho=Math.max(1,10*(1-Math.min(1,u*2.2)));
+x.fillRect(CX-ancho/2,H*0.05,ancho,H*0.25);
+x.globalCompositeOperation="source-over";}
+/* pista de estado cuando piensa */
+if(pen){for(var k=0;k<3;k++){var a=t*2.1+k*2.09;
+x.fillStyle=rgb(0.55);
+x.fillRect(CX+Math.cos(a)*40,H*0.145+Math.sin(a)*11-1.5,2.5,2.5);}}
 x.restore();}
-
 
 function textos(t){
 var ahora=Date.now();
@@ -279,12 +295,6 @@ x.restore();}
 function pintaAviso(t,ahora){
 var e=Math.min(1,(ahora-avisoTs)/260);
 x.save();x.globalAlpha=e;
-/* halo tenue detras */
-x.globalCompositeOperation="lighter";
-var g=x.createRadialGradient(CX,H*0.5,0,CX,H*0.5,W*0.85);
-g.addColorStop(0,"rgba(40,120,90,0.16)");g.addColorStop(1,"rgba(0,0,0,0)");
-x.fillStyle=g;x.fillRect(0,0,W,H);
-x.globalCompositeOperation="source-over";
 /* marca */
 x.textAlign="center";x.textBaseline="middle";
 x.font="14px "+F;
@@ -370,19 +380,20 @@ x.clearRect(0,0,W,H);
 var ahora=(new Date()).getTime();
 var diceVivo=dice&&(ahora-(diceFin||ahora)<4000);
 modoMin=(escuchando||pensando||hablando||diceVivo)&&!avisoOn;
+if(escuchando&&estAnt!=="ESCUCHANDO")hazTs=ahora;
+estAnt=escuchando?"ESCUCHANDO":(pensando?"PENSANDO":(hablando?"HABLANDO":"OTRO"));
 if(avisoOn){
 pintaAviso(t,ahora);
+textos(t);punto(t);
 }else if(modoMin){
 pintaMinimo(t,ahora);
-}else{
-if(escuchando)anillo(cy,t);
+textos(t);punto(t);
+}else if(qp.masa){
 cuerpo(cy,t,blob(cy,t));
-barras(cy,t);
-if(pensando)orbitas(cy,t);
+textos(t);punto(t);
 }
-textos(t);
-punto(t);
-if(!avisoOn)pintaArranque(ahora);
+/* en reposo no se dibuja NADA: la lente queda limpia */
+if(!avisoOn&&!modoMin)pintaArranque(ahora);
 x.globalCompositeOperation="source-over";
 requestAnimationFrame(loop);}
 requestAnimationFrame(loop);})();
