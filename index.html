@@ -2,45 +2,12 @@
 <html lang="es"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#040806">
-<title>NEO lite</title>
+<title>NEO</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;background:#040806;color:#7dffb2;font-family:ui-monospace,Menlo,monospace}
-body{display:flex;flex-direction:column;padding:8px 12px;width:100vw;max-width:100vw;min-width:0}
-header,canvas,#frase,#resp,#pista,button{min-width:0;max-width:100%}
-header{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.1em;opacity:.8;gap:8px;white-space:nowrap;overflow:hidden}
-header span{overflow:hidden;text-overflow:ellipsis}
-#dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7dffb2;margin-right:6px;vertical-align:middle}
-#dot.off{background:#2b3b32}
-#red{display:none}
-#onda{transition:opacity .4s ease;opacity:0}
-.overlay #frase,.overlay #resp,.overlay #pista{display:none}
-.overlay #estado{font-size:11px;letter-spacing:.18em;margin:2px 0 0}
-.overlay canvas{height:26vh;margin:auto 0}
-.overlay header{opacity:.14}
-.overlay button{display:none}
-.overlay #resp,.overlay #frase{display:none}
-.overlay #pista{display:block;text-align:center;opacity:.22;font-size:9px;margin-top:2px}
-#estado{margin-top:4px;font-size:12px;letter-spacing:.22em;color:#a9ffcd}
-canvas{width:100%;height:14vh;display:block;margin:2px 0}
-#frase{font-size:11px;opacity:.55;min-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#resp{flex:1;font-size:18px;line-height:1.34;overflow:hidden;margin-top:6px;word-break:break-word;display:flex;align-items:center}
-#pista{font-size:10px;opacity:.4;margin:4px 0}
-button{font:inherit;letter-spacing:.14em;border:1px solid #2f6b47;background:#08150e;color:#7dffb2;padding:12px;border-radius:10px;margin-top:6px}
-#hablar{font-size:15px;padding:15px;border-color:#3f9c66}
-#micro{font-size:11px}
-.hide{display:none}
-</style></head><body>
-<header><span><i id="dot" class="off"></i>NEO LITE</span><span id="red">ENLACE</span></header>
-<div id="estado">EN ESPERA</div>
-<canvas id="onda"></canvas>
-<div id="frase"></div>
-<div id="resp"></div>
-<div id="pista">toca la patilla para hablar</div>
-<button id="hablar">HABLAR</button>
-<button id="micro">ACTIVAR MICROFONO</button>
-<div id="hud" class="hide"></div>
-<script src="static/lite.js?v=36"></script>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:transparent}
+canvas{display:block;width:100%;height:100%;background:transparent}
+</style>
+</head><body>
+<canvas id="hud"></canvas>
+<script src="static/lite.js?v=41"></script>
 </body></html>
-<!--FIN-->
