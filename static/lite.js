@@ -175,22 +175,8 @@
     x.restore();
     x.globalCompositeOperation = "source-over";
 
-    /* lo que ha oido de ti, en tono bajo */
+    /* lo que ha oido de ti: ya no se pinta. En la lente solo sale lo que dice NEO. */
     var ahora2 = ahora;
-    var alf = frase ? Math.max(0, Math.min(1, (8000 - (ahora2 - fraseTs)) / 1200)) : 0;
-    if (alf > 0.01) {
-      x.save();
-      x.textAlign = "center";
-      x.textBaseline = "middle";
-      x.font = "18px " + F;
-      x.lineWidth = 3;
-      x.strokeStyle = "rgba(0,14,16,0.75)";
-      x.fillStyle = "rgba(180,225,205," + (0.72 * alf).toFixed(3) + ")";
-      var lf = envolver(frase, W - 60, 2);
-      for (var i = 0; i < lf.length; i++) x.strokeText(lf[i], CX, H * 0.575 + i * 21);
-      for (var i2 = 0; i2 < lf.length; i2++) x.fillText(lf[i2], CX, H * 0.575 + i2 * 21);
-      x.restore();
-    }
 
     /* lo que dice NEO, blanco */
     if (dice) {
